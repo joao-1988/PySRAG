@@ -69,4 +69,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Special thanks to the contributors and maintainers of the SRAG Analysis package.
 
 Happy coding!
-```
