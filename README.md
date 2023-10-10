@@ -33,15 +33,19 @@ Here's an example of how to use the SRAG package:
 ```python
 from PySRAG import PySRAG
 
+path_utils ='./PySRAG/utils'
+filename = 'INFLUD23-07-08-2023.csv'
+path='./' # filename directory
+
 # Initialize the SRAG class
 srag = PySRAG.SRAG(filename, path, path_utils)
 
 # Generate training data
-X, y = srag.generate_training_data(lag=0, objective='binary')
+X, y = srag.generate_training_data(lag=None, objective='multiclass')
 
 # Train a Gradient Boosting Model
-trainer = srag_analysis.GBMTrainer(objective='binary')
-model = trainer.fit(X, y)
+trainer = PySRAG.GBMTrainer(objective='multiclass', eval_metric='multi_logloss')
+trainer.fit(X, y)
 ```
 
 ~~For more detailed information and examples, please refer to the package documentation.~~
