@@ -22,7 +22,7 @@ Before you begin, ensure you have met the following requirements:
 ### Installation
 
 You can install the PySRAG package using `pip`:
-
+```
 ```bash
 pip install PySRAG
 ```
