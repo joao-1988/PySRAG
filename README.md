@@ -1,4 +1,3 @@
-```markdown
 # PySRAG
 
 This Python package provides tools for analyzing and processing data related to Severe Acute Respiratory Syndrome (SARS) and other respiratory viruses. It includes functions for data preprocessing, feature engineering, and training Gradient Boosting Models (GBMs) for binary or multiclass classification.
@@ -22,7 +21,7 @@ Before you begin, ensure you have met the following requirements:
 ### Installation
 
 You can install the PySRAG package using `pip`:
-```
+
 ```bash
 pip install PySRAG
 ```
