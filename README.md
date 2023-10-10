@@ -31,7 +31,7 @@ pip install PySRAG
 Here's an example of how to use the SRAG package:
 
 ```python
-import PySRAG
+from PySRAG import PySRAG
 
 # Initialize the SRAG class
 srag = PySRAG.SRAG(filename, path, path_utils)
