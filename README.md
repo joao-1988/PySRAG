@@ -10,13 +10,13 @@ These instructions will help you get started with using the PySRAG package.
 
 Before you begin, ensure you have met the following requirements:
 
-- Python 3.x installed
+- Python 3.10.12 installed
 - Required Python packages (you can install them using `pip`):
-  - `pandas`
-  - `numpy`
-  - `joblib`
-  - `scikit-learn`
-  - `lightgbm`
+  - `pandas==1.5.3`
+  - `numpy==1.23.5`
+  - `joblib==1.3.2`
+  - `scikit-learn==1.2.2`
+  - `lightgbm==4.0.0`
 
 ### Installation
 
