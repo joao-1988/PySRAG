@@ -1,11 +1,11 @@
 ```markdown
-# SRAG Analysis
+# PySRAG
 
 This Python package provides tools for analyzing and processing data related to Severe Acute Respiratory Syndrome (SARS) and other respiratory viruses. It includes functions for data preprocessing, feature engineering, and training Gradient Boosting Models (GBMs) for binary or multiclass classification.
 
 ## Getting Started
 
-These instructions will help you get started with using the SRAG package.
+These instructions will help you get started with using the PySRAG package.
 
 ### Prerequisites
 
@@ -21,10 +21,10 @@ Before you begin, ensure you have met the following requirements:
 
 ### Installation
 
-You can install the SRAG package using `pip`:
+You can install the PySRAG package using `pip`:
 
 ```bash
-pip install srag-analysis
+pip install PySRAG
 ```
 
 ### Usage
@@ -32,10 +32,10 @@ pip install srag-analysis
 Here's an example of how to use the SRAG package:
 
 ```python
-import srag_analysis
+import PySRAG
 
 # Initialize the SRAG class
-srag = srag_analysis.SRAG(filename, path, path_utils)
+srag = PySRAG.SRAG(filename, path, path_utils)
 
 # Generate training data
 X, y = srag.generate_training_data(lag=0, objective='binary')
@@ -49,7 +49,7 @@ For more detailed information and examples, please refer to the package document
 
 ## Documentation
 
-You can find the full documentation for the SRAG package in the [docs](docs/) directory.
+~~You can find the full documentation for the SRAG package in the [docs](docs/) directory.~~
 
 ## Contributing
 
