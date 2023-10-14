@@ -47,22 +47,23 @@ X, y = srag.generate_training_data(lag=None, objective='multiclass')
 trainer = PySRAG.GBMTrainer(objective='multiclass', eval_metric='multi_logloss')
 trainer.fit(X, y)
 ```
+[comment]: <> (
+For more detailed information and examples, please refer to the package documentation.
 
-~~For more detailed information and examples, please refer to the package documentation.~~
+## Documentation
 
-~~## Documentation~~
+You can find the full documentation for the SRAG package in the [docs](docs/) directory.
 
-~~You can find the full documentation for the SRAG package in the [docs](docs/) directory.~~
+## Contributing
 
-~~## Contributing~~
+If you would like to contribute to this project, please follow these steps:
 
-~~If you would like to contribute to this project, please follow these steps:~~
-
-~~1. Fork the repository.~~
-~~2. Create a new branch for your feature or bug fix: `git checkout -b feature/your-feature-name`~~
-~~3. Commit your changes: `git commit -m "Add new feature"`~~
-~~4. Push to your branch: `git push origin feature/your-feature-name`~~
-~~5. Create a pull request.~~
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -m "Add new feature"`
+4. Push to your branch: `git push origin feature/your-feature-name`
+5. Create a pull request.
+)
 
 ## License
 
