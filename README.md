@@ -18,6 +18,7 @@ Before you begin, ensure you have met the following requirements:
   - `scikit-learn==1.2.2`
   - `lightgbm==4.0.0`
 
+<!---
 ### Installation
 
 You can install the PySRAG package using `pip`:
@@ -25,6 +26,7 @@ You can install the PySRAG package using `pip`:
 ```bash
 pip install PySRAG
 ```
+--->
 
 ### Usage
 
