@@ -34,7 +34,7 @@ Here's an example of how to use the SRAG package:
 from PySRAG import PySRAG
 
 path_utils ='./PySRAG/utils'
-filename = 'INFLUD23-07-08-2023.csv'
+filename = 'INFLUD23-07-08-2023.csv' # from https://opendatasus.saude.gov.br/dataset/srag-2021-a-2023
 path='./' # filename directory
 
 # Initialize the SRAG class
