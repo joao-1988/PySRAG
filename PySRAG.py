@@ -6,40 +6,25 @@ from joblib import dump, load
 
 class SRAG:
 
-    def __init__(self, filename, path, path_utils):
+    def __init__(self, filename):
         self.__filename = filename
-        self.__path = path
-        self.__path_utils = path_utils
         self.__dt_file = datetime.strptime(self.__filename[-14:-4], '%d-%m-%Y')
         self.__ano_file = int(self.__dt_file.strftime('%Y'))
         self.__sem_file = int(self.__dt_file.strftime('%U'))
         self.__dt_file_sem = self.__get_previous_sunday(self.__dt_file)
-        self.__initialize_attributes()
+        self.__load_file_data()
 
     def __get_previous_sunday(self, date):
         days_until_sunday = int(date.strftime('%w'))
         previous_sunday = date - timedelta(days=days_until_sunday)
         return previous_sunday
 
-    def __initialize_attributes(self):
-        self.__load_common_data()
-        self.__load_file_data()
-
-    def __load_common_func(self, filename):
-        return load(os.path.join(self.__path_utils, filename))
-
-    def __load_common_data(self):
-        self.__regiao_uf = self.__load_common_func('regiao_uf')
-        self.__lat_long = self.__load_common_func('lat_long')
-        self.__pop_mun = self.__load_common_func('pop_mun')
-        self.__uf_loc = self.__load_common_func('uf_loc')
-        self.__regiao_loc = self.__load_common_func('regiao_loc')
-
     def __load_file_data(self):
         col_type = {'DT_NOTIFIC': str
             , 'DT_DIGITA': str
             , 'DT_SIN_PRI': str
             , 'SG_UF_NOT': str
+            , 'ID_MUNICIP': str
             , 'CO_MUN_NOT': str
             , 'CS_SEXO': str
             , 'NU_IDADE_N': float
@@ -73,8 +58,7 @@ class SRAG:
             , 'AN_OUTRO': float
                     }
         cols = list(col_type.keys())
-        path_file = os.path.join(self.__path, self.__filename)
-        self.__data = (pd.read_csv(path_file, sep=';', encoding='latin-1', engine='pyarrow'
+        self.__data = (pd.read_csv(self.__filename, sep=';', encoding='latin-1', engine='pyarrow'
                                    , usecols=cols, dtype=col_type)
                        .query(' (AMOSTRA == 1) & ( (PCR_RESUL == 1) | (RES_AN == 1) ) ')
                        .assign(
@@ -85,6 +69,7 @@ class SRAG:
             , DT_SIN_PRI=lambda x: pd.to_datetime(x['DT_SIN_PRI'], format='%d/%m/%Y')
             , ANO_SIN_PRI=lambda x: (x['DT_SIN_PRI'].dt.strftime('%Y')).astype(int)
             , SEM_SIN_PRI=lambda x: (x['DT_SIN_PRI'].dt.strftime('%U')).astype(int)
+            , ANO_SEM_SIN_PRI=lambda x: x['ANO_SIN_PRI']*100 + x['SEM_SIN_PRI']
             , DT_SIN_PRI_SEM=lambda x: x['DT_SIN_PRI'].apply(self.__get_previous_sunday)
             , DIF_SEM_FILE_SIN_PRI=lambda x: ((x['DT_FILE_SEM'] - x['DT_SIN_PRI_SEM']).dt.days / 7).astype(int)
             , IDADE_ANO=lambda x: np.where(x['TP_IDADE'] == 3, np.round(x['NU_IDADE_N'], 2),
@@ -130,17 +115,13 @@ class SRAG:
                                    'POS_PARA2', 'POS_PARA3', 'POS_PARA4', 'POS_ADENO', 'POS_METAP',
                                    'POS_BOCA', 'POS_RINO', 'POS_OUTROS']].sum(axis=1)
         )
-                       .merge(self.__regiao_uf[['SG_UF_NOT', 'REGIAO']], how='left', on='SG_UF_NOT')
-                       .merge(self.__lat_long, how='left', on='CO_MUN_NOT')
-                       .merge(self.__uf_loc, how='left', on='SG_UF_NOT')
-                       .merge(self.__regiao_loc, how='left', on='REGIAO')
-                       .merge(self.__pop_mun, how='left', on='CO_MUN_NOT')
+                       .merge(self.load_common_data(), how='left', left_on='CO_MUN_NOT', right_on='CD_IBGE')
                        [['DT_FILE', 'ANO_FILE', 'SEM_FILE', 'DT_FILE_SEM'
-                , 'DT_SIN_PRI', 'ANO_SIN_PRI', 'SEM_SIN_PRI', 'DT_SIN_PRI_SEM'
+                , 'DT_SIN_PRI', 'ANO_SIN_PRI', 'SEM_SIN_PRI', 'ANO_SEM_SIN_PRI', 'DT_SIN_PRI_SEM'
                 , 'DIF_SEM_FILE_SIN_PRI'
                 , 'REGIAO', 'REGIAO_LATITUDE', 'REGIAO_LONGITUDE'
                 , 'SG_UF_NOT', 'UF_LATITUDE', 'UF_LONGITUDE'
-                , 'CO_MUN_NOT', 'LATITUDE', 'LONGITUDE'
+                , 'ID_MUNICIP', 'CO_MUN_NOT', 'LATITUDE', 'LONGITUDE'
                 , 'POPULACAO'
                 , 'IDADE_ANO', 'CS_SEXO'
                 , 'PCR_RESUL', 'RES_AN'
@@ -201,10 +182,6 @@ class SRAG:
         return self.__filename
 
     @property
-    def path(self):
-        return self.__path
-
-    @property
     def data(self):
         return self.__data
 
@@ -223,6 +200,12 @@ class SRAG:
     @property
     def dt_file_sem(self):
         return self.__dt_file_sem
+    
+    @staticmethod
+    def load_common_data():
+        base_path = os.path.abspath(os.path.dirname(__file__))
+        base_file_path = os.path.join(base_path, 'utils', 'base')
+        return load(base_file_path)
 
 
 from sklearn.metrics import brier_score_loss
