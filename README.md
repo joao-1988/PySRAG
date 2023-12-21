@@ -35,12 +35,10 @@ Here's an example of how to use the SRAG package:
 ```python
 from PySRAG import PySRAG
 
-path_utils ='./PySRAG/utils'
-filename = 'INFLUD23-07-08-2023.csv' # from https://opendatasus.saude.gov.br/dataset/srag-2021-a-2023
-path='./' # filename directory
+filepath = 'INFLUD23-07-08-2023.csv' # from https://opendatasus.saude.gov.br/dataset/srag-2021-a-2023
 
 # Initialize the SRAG class
-srag = PySRAG.SRAG(filename, path, path_utils)
+srag = PySRAG.SRAG(filepath)
 
 # Generate training data
 X, y = srag.generate_training_data(lag=None, objective='multiclass')
