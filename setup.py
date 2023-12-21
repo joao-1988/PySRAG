@@ -17,5 +17,6 @@ setup(
     ],
 
     # Optional
-    install_requires=['numpy', 'pandas', 'joblib', 'sklearn', 'lightgbm'],
+    install_requires=['numpy', 'pandas', 'joblib', 'scikit-learn', 'lightgbm'],
+    #'joblib==1.3.2','lightgbm==4.0.0','numpy==1.23.5','pandas==1.5.3','scikit-learn==1.2.2'
 )
