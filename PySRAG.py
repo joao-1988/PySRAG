@@ -6,9 +6,9 @@ from joblib import dump, load
 
 class SRAG:
 
-    def __init__(self, filename):
-        self.__filename = filename
-        self.__dt_file = datetime.strptime(self.__filename[-14:-4], '%d-%m-%Y')
+    def __init__(self, filepath):
+        self.__filepath = filepath
+        self.__dt_file = datetime.strptime(self.__filepath[-14:-4], '%d-%m-%Y')
         self.__ano_file = int(self.__dt_file.strftime('%Y'))
         self.__sem_file = int(self.__dt_file.strftime('%U'))
         self.__dt_file_sem = self.__get_previous_sunday(self.__dt_file)
@@ -58,7 +58,7 @@ class SRAG:
             , 'AN_OUTRO': float
                     }
         cols = list(col_type.keys())
-        self.__data = (pd.read_csv(self.__filename, sep=';', encoding='latin-1', engine='pyarrow'
+        self.__data = (pd.read_csv(self.__filepath, sep=';', encoding='latin-1', engine='pyarrow'
                                    , usecols=cols, dtype=col_type)
                        .query(' (AMOSTRA == 1) & ( (PCR_RESUL == 1) | (RES_AN == 1) ) ')
                        .assign(
@@ -171,6 +171,16 @@ class SRAG:
 
         return X, y
 
+    def generate_training_weeks(self, lag = None):
+        if lag == None:
+          data = self.__data
+        else:
+          data = self.__data.query(f'DIF_SEM_FILE_SIN_PRI == {int(lag)}')
+
+        df = data[['DT_SIN_PRI_SEM', 'ANO_SIN_PRI', 'SEM_SIN_PRI', 'ANO_SEM_SIN_PRI']].drop_duplicates().reset_index(drop=True)
+        
+        return df
+
     def get_start_day_of_week(self, lag=0):
         start_day_week = self.__dt_file_sem - timedelta(weeks=lag)
         year = int(start_day_week.strftime('%Y'))
@@ -178,8 +188,8 @@ class SRAG:
         return {'lag': lag, 'year': year, 'week': week, 'start_day_week': start_day_week}
 
     @property
-    def filename(self):
-        return self.__filename
+    def filepath(self):
+        return self.__filepath
 
     @property
     def data(self):
