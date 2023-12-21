@@ -39,13 +39,13 @@ from PySRAG.PySRAG import SRAG, GBMTrainer
 filepath = 'https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SRAG/2023/INFLUD23-16-10-2023.csv' 
 
 # Initialize the SRAG class
-srag = PySRAG.SRAG(filepath)
+srag = SRAG(filepath)
 
 # Generate training data
 X, y = srag.generate_training_data(lag=None, objective='multiclass')
 
 # Train a Gradient Boosting Model
-trainer = PySRAG.GBMTrainer(objective='multiclass', eval_metric='multi_logloss')
+trainer = GBMTrainer(objective='multiclass', eval_metric='multi_logloss')
 trainer.fit(X, y)
 
 # Get Prevalences
