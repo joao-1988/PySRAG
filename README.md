@@ -33,19 +33,30 @@ pip install PySRAG
 Here's an example of how to use the SRAG package:
 
 ```python
-from PySRAG import PySRAG
-
-filepath = 'INFLUD23-07-08-2023.csv' # from https://opendatasus.saude.gov.br/dataset/srag-2021-a-2023
-
-# Initialize the SRAG class
-srag = PySRAG.SRAG(filepath)
-
-# Generate training data
-X, y = srag.generate_training_data(lag=None, objective='multiclass')
-
-# Train a Gradient Boosting Model
-trainer = PySRAG.GBMTrainer(objective='multiclass', eval_metric='multi_logloss')
-trainer.fit(X, y)
+>>>from PySRAG.PySRAG import SRAG, GBMTrainer
+>>>
+>>># from https://opendatasus.saude.gov.br/dataset/srag-2021-a-2023
+>>>filepath = 'https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SRAG/2023/INFLUD23-16-10-2023.csv' 
+>>>
+>>># Initialize the SRAG class
+>>>srag = PySRAG.SRAG(filepath)
+>>>
+>>># Generate training data
+>>>X, y = srag.generate_training_data(lag=None, objective='multiclass')
+>>>
+>>># Train a Gradient Boosting Model
+>>>trainer = PySRAG.GBMTrainer(objective='multiclass', eval_metric='multi_logloss')
+>>>trainer.fit(X, y)
+>>>
+>>># Get Prevalences
+>>>trainer.model.predict_proba(X)
+array([[0.36010109, 0.00913779, 0.01018454, 0.0413374 , 0.57923918],
+       [0.26766377, 0.16900332, 0.13882407, 0.10029527, 0.32421357],
+       [0.01113844, 0.0879723 , 0.00920112, 0.87940126, 0.01228688],
+       ...,
+       [0.02176705, 0.03438226, 0.01555221, 0.11300813, 0.81529035],
+       [0.02176705, 0.03438226, 0.01555221, 0.11300813, 0.81529035],
+       [0.08954213, 0.17430267, 0.041657  , 0.66829007, 0.02620812]])
 ```
 
 <!---
