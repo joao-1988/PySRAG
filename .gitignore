@@ -1,6 +1,7 @@
 INFLUD23-16-10-2023.csv
 PySRAG_tester.ipynb
 __pycache__
-./data/__pycache__
-./models/__pycache__
+./pysrag/__pycache__
+./pysrag/data/__pycache__
+./pysrag/models/__pycache__
 _PySRAG.py
