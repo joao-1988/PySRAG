@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="PySRAG",
-    version="0.1.3",
+    version="0.1.4",
     packages=find_packages(),
 
     # Metadata
@@ -19,4 +19,5 @@ setup(
     # Optional
     install_requires=['numpy', 'pandas', 'scikit-learn', 'lightgbm'],
     #'lightgbm==4.0.0','numpy==1.23.5','pandas==1.5.3','scikit-learn==1.2.2'
+    package_data={"": ["*.csv"]}
 )
