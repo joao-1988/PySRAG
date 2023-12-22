@@ -10,30 +10,28 @@ These instructions will help you get started with using the PySRAG package.
 
 Before you begin, ensure you have met the following requirements:
 
-- Python 3.10.12 installed
+- Python 3 installed
 - Required Python packages (you can install them using `pip`):
   - `pandas==1.5.3`
   - `numpy==1.23.5`
-  - `joblib==1.3.2`
   - `scikit-learn==1.2.2`
   - `lightgbm==4.0.0`
 
-<!---
 ### Installation
 
 You can install the PySRAG package using `pip`:
 
-```bash
+```python
 pip install PySRAG
 ```
---->
 
 ### Usage
 
 Here's an example of how to use the SRAG package:
 
 ```python
-from PySRAG.PySRAG import SRAG, GBMTrainer
+from pysrag.data import SRAG
+from pysrag.model import GBMTrainer
 
 # from https://opendatasus.saude.gov.br/dataset/srag-2021-a-2023
 filepath = 'https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SRAG/2023/INFLUD23-16-10-2023.csv' 

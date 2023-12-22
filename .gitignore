@@ -5,3 +5,6 @@ __pycache__
 ./pysrag/data/__pycache__
 ./pysrag/models/__pycache__
 _PySRAG.py
+PySRAG.egg-info/
+build/
+dist/

@@ -2,7 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
-from joblib import dump, load
 
 __all__ = ['SRAG']
 
@@ -215,6 +214,6 @@ class SRAG:
     
     @staticmethod
     def load_common_data():
-        base_path = os.path.abspath(os.path.dirname(__file__))
-        base_file_path = os.path.join(base_path, 'base')
-        return load(base_file_path)
+        data_path = os.path.abspath(os.path.dirname(__file__))
+        data_filepath = os.path.join(data_path, 'common_data.csv')
+        return pd.read_csv(data_filepath)
