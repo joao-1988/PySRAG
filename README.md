@@ -97,7 +97,7 @@ To access the web application, visit:
 
 This link will take you to a hosted version of our application, equipped with preloaded data and features for easy exploration.
 
-[![](webapp_PySRAG.png)]([URL_do_link](https://joaoflavio.shinyapps.io/Prevalencia_SRAG/))
+[![](webapp_PySRAG.png)](https://joaoflavio.shinyapps.io/Prevalencia_SRAG/)
 
 ### Features
 
