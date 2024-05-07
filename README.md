@@ -33,7 +33,7 @@ Here's an example of how to use the SRAG package:
 from pysrag.data import SRAG
 from pysrag.model import GBMTrainer
 
-# from https://opendatasus.saude.gov.br/dataset/srag-2021-a-2023
+# from https://opendatasus.saude.gov.br/dataset/srag-2021-a-2024
 filepath = 'https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SRAG/2023/INFLUD23-16-10-2023.csv' 
 
 # Initialize the SRAG class
