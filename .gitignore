@@ -1,5 +1,5 @@
-INFLUD23-16-10-2023.csv
-PySRAG_tester.ipynb
+*.csv
+*.ipynb
 __pycache__
 ./pysrag/__pycache__
 ./pysrag/data/__pycache__

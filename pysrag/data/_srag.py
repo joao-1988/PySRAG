@@ -7,20 +7,20 @@ __all__ = ['SRAG']
 
 class SRAG:
 
-    def __init__(self, filepath):
+    def __init__(self, filepath, old_filter=True):
         self.__filepath = filepath
         self.__dt_file = datetime.strptime(self.__filepath[-14:-4], '%d-%m-%Y')
         self.__ano_file = int(self.__dt_file.strftime('%Y'))
         self.__sem_file = int(self.__dt_file.strftime('%U'))
         self.__dt_file_sem = self.__get_previous_sunday(self.__dt_file)
-        self.__load_file_data()
+        self.__load_file_data(old_filter)
 
     def __get_previous_sunday(self, date):
         days_until_sunday = int(date.strftime('%w'))
         previous_sunday = date - timedelta(days=days_until_sunday)
         return previous_sunday
 
-    def __load_file_data(self):
+    def __load_file_data(self, old_filter):
         col_type = {'DT_NOTIFIC': str
             , 'DT_DIGITA': str
             , 'DT_SIN_PRI': str
@@ -57,12 +57,43 @@ class SRAG:
             , 'PCR_RINO': float
             , 'PCR_OUTRO': float
             , 'AN_OUTRO': float
+            , 'CASO_SRAG': float
+            , 'HOSPITAL': float
+            , 'EVOLUCAO': float
+            , 'TOSSE': float
+            , 'FEBRE': float
+            , 'GARGANTA': float
+            , 'DISPNEIA': float
+            , 'DESC_RESP': float
+            , 'SATURACAO': float
                     }
-        cols = list(col_type.keys())
-        self.__data = (pd.read_csv(self.__filepath, sep=';', encoding='latin-1', engine='pyarrow'
-                                   , usecols=cols, dtype=col_type)
-                       .query(' (AMOSTRA == 1) & ( (PCR_RESUL == 1) | (RES_AN == 1) ) ')
-                       .assign(
+        
+        all_cols = pd.read_csv(self.__filepath, sep=';', encoding='latin-1',  nrows=0).columns
+        
+        if old_filter:
+            col_type.pop('CASO_SRAG')
+            data = (pd.read_csv(self.__filepath, sep=';', encoding='latin-1', engine='pyarrow'
+                                , usecols=col_type.keys(), dtype=col_type)
+                    .query(' (AMOSTRA == 1) & ( (PCR_RESUL == 1) | (RES_AN == 1) ) ') 
+                    )  
+        elif 'CASO_SRAG' not in all_cols:
+            col_type.pop('CASO_SRAG')
+            data = (pd.read_csv(self.__filepath, sep=';', encoding='latin-1', engine='pyarrow'
+                                , usecols=col_type.keys(), dtype=col_type)
+                    .assign(sin_SG = lambda x: np.where( (x['TOSSE'] == 1) | ((x['FEBRE'] == 1) & (x['GARGANTA'] == 1)), 1, 0)
+                            ,sin_ad_SRAG = lambda x: np.where( (x['DISPNEIA'] == 1) | (x['DESC_RESP'] == 1) | (x['SATURACAO'] == 1), 1, 0)
+                            ,cond_SRAG = lambda x: np.where( ( (x['HOSPITAL'] == 1) | (x['EVOLUCAO'] == 2) ) &
+                                                            (x['sin_SG'] == 1) & (x['sin_ad_SRAG'] == 1), 1, 0)
+                            )
+                    .query('cond_SRAG == 1')
+                    )
+        else:
+            data = (pd.read_csv(self.__filepath, sep=';', encoding='latin-1', engine='pyarrow'
+                                , usecols=col_type.keys(), dtype=col_type)
+                    .query('CASO_SRAG == 1')
+                    )
+
+        self.__data = (data.assign(
             DT_FILE=self.__dt_file
             , ANO_FILE=self.__ano_file
             , SEM_FILE=self.__sem_file
@@ -115,7 +146,7 @@ class SRAG:
             , POS_SUM=lambda x: x[['POS_FLUA', 'POS_FLUB', 'POS_SARS2', 'POS_VSR', 'POS_PARA1',
                                    'POS_PARA2', 'POS_PARA3', 'POS_PARA4', 'POS_ADENO', 'POS_METAP',
                                    'POS_BOCA', 'POS_RINO', 'POS_OUTROS']].sum(axis=1)
-        )
+            )   
                        .merge(self.load_common_data(), how='left', left_on='CO_MUN_NOT', right_on='CD_IBGE')
                        [['DT_FILE', 'ANO_FILE', 'SEM_FILE', 'DT_FILE_SEM'
                 , 'DT_SIN_PRI', 'ANO_SIN_PRI', 'SEM_SIN_PRI', 'ANO_SEM_SIN_PRI', 'DT_SIN_PRI_SEM'
