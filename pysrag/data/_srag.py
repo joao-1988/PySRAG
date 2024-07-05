@@ -59,7 +59,7 @@ class SRAG:
             , 'AN_OUTRO': float
             , 'CASO_SRAG': float
             , 'HOSPITAL': float
-            , 'EVOLUCAO': float
+            , 'EVOLUCAO': str
             , 'TOSSE': float
             , 'FEBRE': float
             , 'GARGANTA': float
@@ -80,9 +80,10 @@ class SRAG:
             col_type.pop('CASO_SRAG')
             data = (pd.read_csv(self.__filepath, sep=';', encoding='latin-1', engine='pyarrow'
                                 , usecols=col_type.keys(), dtype=col_type)
-                    .assign(sin_SG = lambda x: np.where( (x['TOSSE'] == 1) | ((x['FEBRE'] == 1) & (x['GARGANTA'] == 1)), 1, 0)
+                    .assign( evolucao = lambda x: x['EVOLUCAO'].str.extract('([-+]?\d*\.?\d+)', expand=False).astype(float)
+                            ,sin_SG = lambda x: np.where( (x['TOSSE'] == 1) | ((x['FEBRE'] == 1) & (x['GARGANTA'] == 1)), 1, 0)
                             ,sin_ad_SRAG = lambda x: np.where( (x['DISPNEIA'] == 1) | (x['DESC_RESP'] == 1) | (x['SATURACAO'] == 1), 1, 0)
-                            ,cond_SRAG = lambda x: np.where( ( (x['HOSPITAL'] == 1) | (x['EVOLUCAO'] == 2) ) &
+                            ,cond_SRAG = lambda x: np.where( ( (x['HOSPITAL'] == 1) | (x['evolucao'] == 2) ) &
                                                             (x['sin_SG'] == 1) & (x['sin_ad_SRAG'] == 1), 1, 0)
                             )
                     .query('cond_SRAG == 1')
