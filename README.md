@@ -93,11 +93,11 @@ The PySRAG package includes a web application that allows users to interactively
 
 To access the web application, visit:
 
-[PySRAG Web App](https://joaoflavio.shinyapps.io/Prevalencia_SRAG/)
+[PySRAG Web App](https://joaoflavio.shinyapps.io/Virus_Monitor/)
 
 This link will take you to a hosted version of our application, equipped with preloaded data and features for easy exploration.
  
-[![](webapp_PySRAG.png)](https://joaoflavio.shinyapps.io/Prevalencia_SRAG/)
+[![](webapp_PySRAG.png)](https://joaoflavio.shinyapps.io/Virus_Monitor/)
 
 ### Features
 
