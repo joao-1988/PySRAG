@@ -12,8 +12,13 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url="https://github.com/joao-1988/PySRAG",
+    
+    # License metadata
+    license="MIT",  # Aqui você especifica a licença do projeto
     classifiers=[
-        "License :: OSI Approved :: Python Software Foundation License"
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent"
     ],
 
     # Optional
