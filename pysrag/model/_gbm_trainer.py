@@ -16,7 +16,7 @@ class GBMTrainer:
         self.log_period = log_period
         self.random_state = random_state
 
-    def fit(self, X, y, verbose=False):
+    def fit(self, X, y, verbose=False, refit = False):
 
         values, counts = np.unique(y, return_counts=True)
         remove_category = values[counts < 2]
@@ -61,6 +61,25 @@ class GBMTrainer:
                        eval_set=eval_set,
                        eval_metric=self.eval_metric,
                        callbacks=callbacks)
+        
+        self.best_iteration = self.model.best_iteration_
+        
+        if refit:
+            self.model = lgb.LGBMClassifier(
+                boosting_type='gbdt',
+                objective=self.objective,
+                n_estimators=self.best_iteration,
+                num_leaves=10,
+                max_depth=3,
+                n_jobs=0,
+                learning_rate=0.1,
+                min_data_in_leaf=30,
+                feature_fraction=0.8,
+                min_data_in_bin=10,
+                random_state=self.random_state,
+                verbose=-1
+            )            
+            self.model.fit(X, y, )
 
         return self.model
 

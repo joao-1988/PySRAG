@@ -24,6 +24,7 @@ class SRAG:
         col_type = {'DT_NOTIFIC': str
             , 'DT_DIGITA': str
             , 'DT_SIN_PRI': str
+            , 'SEM_PRI': str
             , 'SG_UF_NOT': str
             , 'ID_MUNICIP': str
             , 'CO_MUN_NOT': str
@@ -100,6 +101,7 @@ class SRAG:
             , SEM_FILE=self.__sem_file
             , DT_FILE_SEM=self.__dt_file_sem
             , DT_SIN_PRI=lambda x: pd.to_datetime(x['DT_SIN_PRI'], format='%d/%m/%Y')
+            , SEM_PRI=lambda x: x['SEM_PRI'].astype(int)
             , ANO_SIN_PRI=lambda x: (x['DT_SIN_PRI'].dt.strftime('%Y')).astype(int)
             , SEM_SIN_PRI=lambda x: (x['DT_SIN_PRI'].dt.strftime('%U')).astype(int)
             , ANO_SEM_SIN_PRI=lambda x: x['ANO_SIN_PRI']*100 + x['SEM_SIN_PRI']
@@ -150,7 +152,7 @@ class SRAG:
             )   
                        .merge(self.load_common_data(), how='left', left_on='CO_MUN_NOT', right_on='CD_IBGE')
                        [['DT_FILE', 'ANO_FILE', 'SEM_FILE', 'DT_FILE_SEM'
-                , 'DT_SIN_PRI', 'ANO_SIN_PRI', 'SEM_SIN_PRI', 'ANO_SEM_SIN_PRI', 'DT_SIN_PRI_SEM'
+                , 'DT_SIN_PRI','SEM_PRI', 'ANO_SIN_PRI', 'SEM_SIN_PRI', 'ANO_SEM_SIN_PRI', 'DT_SIN_PRI_SEM'
                 , 'DIF_SEM_FILE_SIN_PRI'
                 , 'REGIAO', 'REGIAO_LATITUDE', 'REGIAO_LONGITUDE'
                 , 'SG_UF_NOT', 'UF_LATITUDE', 'UF_LONGITUDE'
