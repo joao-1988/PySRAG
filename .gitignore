@@ -9,3 +9,4 @@ PySRAG.egg-info/
 build/
 dist/
 data/common_data_old.csv
+refs/
