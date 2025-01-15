@@ -40,7 +40,14 @@ filepath = 'https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SRAG/2023/INFLU
 srag = SRAG(filepath)
 
 # Generate training data
-X, y = srag.generate_training_data(lag=None, objective='multiclass')
+inputs = ['REGIAO_LATITUDE', 'REGIAO_LONGITUDE', 'UF_LATITUDE'
+        , 'UF_LONGITUDE', 'LATITUDE', 'LONGITUDE', 'POPULACAO', 'IDADE_ANO'
+        , 'ANO_SEM_SIN_PRI']
+target = ['POS_SARS2', 'POS_FLUA', 'POS_FLUB', 'POS_VSR']
+residual_viruses = ['POS_PARA1', 'POS_PARA2', 'POS_PARA3', 'POS_PARA4',
+                    'POS_ADENO', 'POS_METAP', 'POS_BOCA', 'POS_RINO', 'POS_OUTROS']
+
+X, y = srag.generate_training_data(objective='multiclass', cols_X=inputs, col_y=target, residual_viruses=residual_viruses)
 
 # Train a Gradient Boosting Model
 trainer = GBMTrainer(objective='multiclass', eval_metric='multi_logloss')
@@ -48,13 +55,13 @@ trainer.fit(X, y)
 
 # Get Prevalences
 trainer.model.predict_proba(X)
-array([[0.36010109, 0.00913779, 0.01018454, 0.0413374 , 0.57923918],
-       [0.26766377, 0.16900332, 0.13882407, 0.10029527, 0.32421357],
-       [0.01113844, 0.0879723 , 0.00920112, 0.87940126, 0.01228688],
+array([[9.73523796e-05, 8.91182790e-04, 1.21236644e-01, 8.64260161e-01, 1.35146598e-02],
+       [4.71281550e-03, 2.36337464e-05, 9.59325690e-01, 2.72306200e-02, 8.70724046e-03],
+       [6.95816743e-04, 3.35154571e-05, 2.81288034e-04, 9.98876481e-01, 1.12898420e-04],
        ...,
-       [0.02176705, 0.03438226, 0.01555221, 0.11300813, 0.81529035],
-       [0.02176705, 0.03438226, 0.01555221, 0.11300813, 0.81529035],
-       [0.08954213, 0.17430267, 0.041657  , 0.66829007, 0.02620812]])
+       [4.62475587e-03, 2.82325172e-03, 3.81832162e-03, 1.39748287e-01, 8.48985384e-01],
+       [4.62475587e-03, 2.82325172e-03, 3.81832162e-03, 1.39748287e-01, 8.48985384e-01],
+       [1.13695780e-02, 1.17825387e-03, 1.04659501e-02, 9.74318052e-01, 2.66816576e-03]])
 ```
 
 <!---
