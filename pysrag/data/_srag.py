@@ -136,9 +136,10 @@ class SRAG:
                 , DT_SIN_PRI_SEM=lambda x: x['DT_SIN_PRI'].apply(self.__get_previous_sunday)
                 , DIF_SEM_FILE_SIN_PRI=lambda x: ((x['DT_FILE_SEM'] - x['DT_SIN_PRI_SEM']).dt.days / 7).astype(int)
 
-                , IDADE_ANO=lambda x: np.where(x['TP_IDADE'] == 3, np.round(x['NU_IDADE_N'], 2),
-                                    np.where(x['TP_IDADE'] == 2, np.round(x['NU_IDADE_N'] /  (12), 2),
-                                    np.where(x['TP_IDADE'] == 1, np.round(x['NU_IDADE_N'] / (360), 2), None))).astype(float)
+                , IDADE_ANO_aux=lambda x: np.where(x['TP_IDADE'] == 3, np.round(x['NU_IDADE_N'], 4),
+                                    np.where(x['TP_IDADE'] == 2, np.round(x['NU_IDADE_N'] /  (12), 4),
+                                    np.where(x['TP_IDADE'] == 1, np.round(x['NU_IDADE_N'] / (365), 4), None))).astype(float)
+                , IDADE_ANO=lambda x: np.where(x['IDADE_ANO_aux'] <= 0, np.round(1/365, 4) , x['IDADE_ANO_aux'])
                 , CO_MUN_NOT=lambda x: (x['CO_MUN_NOT']).astype(int)
                 , POS_FLUA=lambda x: np.where(((x['POS_PCRFLU'] == 1) & (x['TP_FLU_PCR'] == 1)) |
                                             ((x['POS_AN_FLU'] == 1) & (x['TP_FLU_AN'] == 1))
@@ -204,16 +205,14 @@ class SRAG:
 
     def generate_training_data(self, objective, cols_X, col_y, residual_viruses=''):       
         df = self.__data.query('POS_SUM > 0')
-        if residual_viruses != '':
-              df = df.assign(POS_RESIDUAL=lambda x: x[residual_viruses].max(axis=1))
-              col_y = list(set(col_y) - (set(residual_viruses)))
-              col_y.extend(['POS_RESIDUAL'])
-              col_y = list(set(col_y))
 
-        if objective == 'binary':
-            df = df.reset_index(drop=True)
-            X, y = df[cols_X], df[col_y]
-        elif objective == 'multiclass':
+        if objective == 'multiclass':
+            if residual_viruses != '':
+                df = df.assign(POS_RESIDUAL=lambda x: x[residual_viruses].max(axis=1))
+                col_y = list(set(col_y) - (set(residual_viruses)))
+                col_y.extend(['POS_RESIDUAL'])
+                col_y = list(set(col_y))
+
             virus = (df[col_y]
                      .apply(self.__dummy_to_label)
                      .apply(self.__remove_none, axis=1))
@@ -222,6 +221,9 @@ class SRAG:
                   .explode('VIRUS')
                   .reset_index(drop=True))
             X, y = df[cols_X], df['VIRUS']
+        else:
+            df = df.reset_index(drop=True)
+            X, y = df[cols_X], df[col_y]
         return X, y
 
     def generate_training_weeks(self):
