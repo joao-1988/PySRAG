@@ -7,8 +7,68 @@ from ._epiweek import EpiWeek
 __all__ = ["SRAG"]
 
 class SRAG:
+    """
+    SRAG: A class for processing and preparing Sindrome Respiratória Aguda Grave (SRAG) surveillance data 
+    from CSV files for machine learning tasks, especially in epidemiological modeling.
 
-    def __init__(self, filepath, old_filter=True, col_type_add = {}, col_out_add = []):
+    This class reads one or more CSV files in a specific format, processes the data (cleaning, transformation,
+    filtering by SRAG case definitions), and computes epidemiological features, including age normalization,
+    virus positivity flags, and epidemiological week tracking.
+
+    Attributes:
+    -----------
+    filepath : str or list
+        Path(s) to the input CSV file(s). Filenames must include the date in DD-MM-YYYY format (e.g., 'INFLUD22-03-04-2023.csv').
+    
+    data : pd.DataFrame
+        Processed and filtered dataset containing relevant epidemiological and demographic variables.
+    
+    dt_file : datetime
+        Date extracted from the filename.
+    
+    ano_file : int
+        Epidemiological year corresponding to the file date.
+    
+    sem_file : int
+        Epidemiological week number corresponding to the file date.
+    
+    dt_file_sem : datetime
+        Date corresponding to the Sunday of the epidemiological week of the file date.
+
+    Methods:
+    --------
+    generate_training_data(objective, cols_X, col_y):
+        Generates the training dataset (X, y) for machine learning. Supports both binary/multiclass/regression tasks.
+
+    generate_training_weeks():
+        Returns a DataFrame listing all epidemiological weeks present in the processed dataset.
+
+    get_start_day_of_week(lag=0):
+        Returns a dictionary with information about the start day of the epidemiological week, considering an optional lag.
+
+    load_common_data():
+        Loads external metadata (e.g., geolocation, population) for Brazilian municipalities from 'common_data.csv'.
+
+    Example:
+    --------
+    >>> srag = SRAG("INFLUD22-03-04-2023.csv")
+    >>> X, y = srag.generate_training_data(objective="multiclass", cols_X=["LATITUDE", "LONGITUDE", "IDADE_ANO"], col_y=["POS_SARS2", "POS_FLUA", "POS_FLUB", "POS_VSR"])
+    >>> srag.data.head()
+    """
+
+    def __init__(self, filepath, col_type_add={}, col_out_add=[]):
+        """
+        Initialize SRAG object with file path(s) and optional custom columns.
+
+        Parameters:
+        -----------
+        filepath : str or list of str
+            Path(s) to CSV file(s). Must include date in DD-MM-YYYY format.
+        col_type_add : dict, optional
+            Dictionary of additional columns and their types to load.
+        col_out_add : list, optional
+            List of additional output columns to retain after processing.
+        """
         self.__filepath = filepath
         if isinstance(self.__filepath, list):
             self.__dt_file = max([datetime.strptime(fp[-14:-4], '%d-%m-%Y') for fp in self.__filepath])
@@ -17,7 +77,10 @@ class SRAG:
         self.__ano_file = EpiWeek.epiweek(self.__dt_file)['year']
         self.__sem_file = EpiWeek.epiweek(self.__dt_file)['week']
         self.__dt_file_sem = self.__get_previous_sunday(self.__dt_file)
-        self.__load_file_data(old_filter, col_type_add, col_out_add)
+        self.__load_file_data(col_type_add, col_out_add)
+        self.__all_viruses = ['POS_FLUA', 'POS_FLUB', 'POS_SARS2', 'POS_VSR', 
+                              'POS_PARA1','POS_PARA2', 'POS_PARA3', 'POS_PARA4',
+                              'POS_ADENO', 'POS_METAP','POS_BOCA', 'POS_RINO', 'POS_OUTROS']
 
     def __get_previous_sunday(self, date):
         days_until_sunday = int(date.strftime('%w'))
@@ -172,12 +235,12 @@ class SRAG:
                 )
         return data_processed
         
-    def __load_file_data(self, old_filter, col_type_add = {}, col_out_add = []):
+    def __load_file_data(self, col_type_add = {}, col_out_add = []):
 
         if isinstance(self.__filepath, list):
-            data = pd.concat([ self.__process_data(fp, old_filter, col_type_add, col_out_add) for fp in self.__filepath ]).reset_index(drop=True)
+            data = pd.concat([ self.__process_data(fp, col_type_add, col_out_add) for fp in self.__filepath ]).reset_index(drop=True)
         else:
-            data = self.__process_data(self.__filepath, old_filter, col_type_add, col_out_add)
+            data = self.__process_data(self.__filepath, col_type_add, col_out_add)
 
         self.__data = data
 
@@ -187,15 +250,33 @@ class SRAG:
     def __remove_none(self, lst):
         return [i for i in lst if i != None]
 
-    def generate_training_data(self, objective, cols_X, col_y, residual_viruses=''):       
-        df = self.__data.query('POS_SUM > 0')
+    def generate_training_data(self, objective, cols_X, col_y):  
+        """
+        Generate training data from SRAG records based on a specific objective.
 
-        if objective == 'multiclass':
-            if residual_viruses != '':
+        Parameters:
+        -----------
+        objective : str
+            Either 'multiclass' or another objective (treated as binary or regression).
+        cols_X : list
+            List of column names to use as input features.
+        col_y : str or list
+            Target variable(s). For multiclass, a list of virus labels is expected.
+
+        Returns:
+        --------
+        X : pd.DataFrame
+            Features dataframe.
+        y : pd.Series
+            Target variable or virus label.
+        """             
+        df = self.__data.query('POS_ANY > 0')
+
+        if objective == 'multiclass':           
+            residual_viruses = [virus for virus in self.__all_viruses if virus not in col_y]
+            if len(residual_viruses) > 0:
                 df = df.assign(POS_RESIDUAL=lambda x: x[residual_viruses].max(axis=1))
-                col_y = list(set(col_y) - (set(residual_viruses)))
                 col_y.extend(['POS_RESIDUAL'])
-                col_y = list(set(col_y))
 
             virus = (df[col_y]
                      .apply(self.__dummy_to_label)
@@ -211,6 +292,14 @@ class SRAG:
         return X, y
 
     def generate_training_weeks(self):
+        """
+        Extracts unique weeks present in the dataset, sorted by time.
+
+        Returns:
+        --------
+        pd.DataFrame
+            A DataFrame with columns for week/year and their starting Sundays.
+        """        
         df = (self.__data[['DT_SIN_PRI_SEM', 'ANO_SIN_PRI', 'SEM_SIN_PRI', 'ANO_SEM_SIN_PRI']]
                          .drop_duplicates()
                          .sort_values(by='ANO_SEM_SIN_PRI')
@@ -219,6 +308,19 @@ class SRAG:
         return df
 
     def get_start_day_of_week(self, lag=0):
+        """
+        Get metadata about the start date of an epidemiological week with optional lag.
+
+        Parameters:
+        -----------
+        lag : int, optional
+            Number of weeks before the current file week.
+
+        Returns:
+        --------
+        dict
+            Dictionary with keys: 'lag', 'year', 'week', 'start_day_week'.
+        """        
         start_day_week = self.__dt_file_sem - timedelta(weeks=lag)
         year = EpiWeek.epiweek(start_day_week)['year']
         week = EpiWeek.epiweek(start_day_week)['week']
@@ -226,30 +328,44 @@ class SRAG:
 
     @property
     def filepath(self):
+        """Returns the input file path(s)."""
         return self.__filepath
 
     @property
     def data(self):
+        """Returns the processed SRAG dataset."""
         return self.__data
 
     @property
     def dt_file(self):
+        """Returns the datetime object for the file date."""
         return self.__dt_file
 
     @property
     def ano_file(self):
+        """Returns the epidemiological year of the file."""
         return self.__ano_file
 
     @property
     def sem_file(self):
+        """Returns the epidemiological week of the file."""
         return self.__sem_file
 
     @property
     def dt_file_sem(self):
+        """Returns the Sunday of the epidemiological week for the file date."""
         return self.__dt_file_sem
     
     @staticmethod
     def load_common_data():
+        """
+        Load external reference data for municipalities (e.g., location, population).
+
+        Returns:
+        --------
+        pd.DataFrame
+            DataFrame containing metadata from 'common_data.csv'.
+        """        
         data_path = os.path.abspath(os.path.dirname(__file__))
         data_filepath = os.path.join(data_path, 'common_data.csv')
         return pd.read_csv(data_filepath)
