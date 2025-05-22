@@ -14,7 +14,7 @@ setup(
     url="https://github.com/joao-1988/PySRAG",
     
     # License metadata
-    license="MIT", 
+    license= "MIT", 
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
