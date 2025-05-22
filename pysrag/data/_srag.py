@@ -24,7 +24,7 @@ class SRAG:
         previous_sunday = date - timedelta(days=days_until_sunday)
         return previous_sunday
 
-    def __process_data(self, filepath, old_filter, col_type_add = {}, col_out_add = []):
+    def __process_data(self, filepath, col_type_add = {}, col_out_add = []):
         
         col_type = {'DT_NOTIFIC': str
             , 'DT_DIGITA': str
@@ -63,7 +63,6 @@ class SRAG:
             , 'PCR_RINO': float
             , 'PCR_OUTRO': float
             , 'AN_OUTRO': float
-            , 'CASO_SRAG': float
             , 'HOSPITAL': float
             , 'EVOLUCAO': str
             , 'TOSSE': float
@@ -94,31 +93,16 @@ class SRAG:
         col_out_add = list(set(col_out_add) - (set(col_out)))
         col_out.extend(col_out_add)
         
-        all_cols = pd.read_csv(filepath, sep=';', encoding='latin-1',  nrows=0).columns
-        
-        if old_filter:
-            col_type.pop('CASO_SRAG')
-            data = (pd.read_csv(filepath, sep=';', encoding='latin-1', engine='pyarrow'
-                                , usecols=col_type.keys(), dtype=col_type)
-                    .query(' (AMOSTRA == 1) & ( (PCR_RESUL == 1) | (RES_AN == 1) ) ') 
-                    )  
-        elif 'CASO_SRAG' not in all_cols:
-            col_type.pop('CASO_SRAG')
-            data = (pd.read_csv(filepath, sep=';', encoding='latin-1', engine='pyarrow'
-                                , usecols=col_type.keys(), dtype=col_type)
-                    .assign( evolucao = lambda x: x['EVOLUCAO'].str.extract('([-+]?\d*\.?\d+)', expand=False).astype(float)
-                            ,sin_SG = lambda x: np.where( (x['TOSSE'] == 1) | ((x['FEBRE'] == 1) & (x['GARGANTA'] == 1)), 1, 0)
-                            ,sin_ad_SRAG = lambda x: np.where( (x['DISPNEIA'] == 1) | (x['DESC_RESP'] == 1) | (x['SATURACAO'] == 1), 1, 0)
-                            ,cond_SRAG = lambda x: np.where( ( (x['HOSPITAL'] == 1) | (x['evolucao'] == 2) ) &
-                                                            (x['sin_SG'] == 1) & (x['sin_ad_SRAG'] == 1), 1, 0)
-                            )
-                    .query('cond_SRAG == 1')
-                    )
-        else:
-            data = (pd.read_csv(filepath, sep=';', encoding='latin-1', engine='pyarrow'
-                                , usecols=col_type.keys(), dtype=col_type)
-                    .query('CASO_SRAG == 1')
-                    )
+        data = (pd.read_csv(filepath, sep=';', encoding='latin-1', engine='pyarrow'
+                            , usecols=col_type.keys(), dtype=col_type)
+                .assign( evolucao = lambda x: pd.to_numeric(x['EVOLUCAO'], errors='coerce')
+                        ,sin_SG = lambda x: np.where( (x['TOSSE'] == 1) | (x['GARGANTA'] == 1), 1, 0)
+                        ,sin_ad_SRAG = lambda x: np.where( (x['DISPNEIA'] == 1) | (x['DESC_RESP'] == 1) | (x['SATURACAO'] == 1), 1, 0)
+                        ,cond_SRAG = lambda x: np.where( ( (x['HOSPITAL'] == 1) | (x['evolucao'] == 2) ) &
+                                                        (x['sin_SG'] == 1) & (x['sin_ad_SRAG'] == 1), 1, 0)
+                        )
+                .query('cond_SRAG == 1')
+                )
 
         data_processed = (
             data
