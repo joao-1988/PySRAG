@@ -10,3 +10,4 @@ build/
 dist/
 data/common_data_old.csv
 refs/
+*.ini
