@@ -167,6 +167,15 @@ class SRAG:
                 .query('cond_SRAG == 1')
                 )
 
+        formats_to_try = ['%d/%m/%Y', '%Y-%m-%d']
+        DT_SIN_PRI = data['DT_SIN_PRI']
+        for fmt in formats_to_try:
+            try:
+                data['DT_SIN_PRI'] = pd.to_datetime(DT_SIN_PRI, format=fmt)
+                break
+            except ValueError:
+                continue
+
         data_processed = (
             data
             .assign(
@@ -175,7 +184,6 @@ class SRAG:
                 , SEM_FILE=self.__sem_file
                 , DT_FILE_SEM=self.__dt_file_sem
 
-                , DT_SIN_PRI=lambda x: pd.to_datetime(x['DT_SIN_PRI'], format='%d/%m/%Y')
                 , ANO_SIN_PRI = lambda x: x['DT_SIN_PRI'].apply(lambda x: EpiWeek.epiweek(x)['year'])            
                 , SEM_SIN_PRI = lambda x: x['DT_SIN_PRI'].apply(lambda x: EpiWeek.epiweek(x)['week']) 
                 , ANO_SEM_SIN_PRI=lambda x: x['DT_SIN_PRI'].apply(lambda x: EpiWeek.epiweek(x)['epiweek']) 
@@ -187,7 +195,7 @@ class SRAG:
                                     np.where(x['TP_IDADE'] == 2, np.round(x['NU_IDADE_N'] /  (12), 4),
                                     np.where(x['TP_IDADE'] == 1, np.round(x['NU_IDADE_N'] / (365), 4), None))).astype(float)
                 , IDADE_ANO=lambda x: np.where(x['IDADE_ANO_aux'] <= 0, np.round(1/365, 4) , x['IDADE_ANO_aux'])
-                , CO_MUN_NOT=lambda x: (x['CO_MUN_NOT']).astype(int)
+                , CO_MUN_NOT=lambda x: (x['CO_MUN_NOT']).astype(float).fillna(0).astype(int)
                 , POS_FLUA=lambda x: np.where(((x['POS_PCRFLU'] == 1) & (x['TP_FLU_PCR'] == 1)) |
                                             ((x['POS_AN_FLU'] == 1) & (x['TP_FLU_AN'] == 1))
                                             , 1, 0)

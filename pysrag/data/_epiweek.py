@@ -69,13 +69,16 @@ class EpiWeek:
 
         return {'year': year, 'week': week, 'epiweek': epiweek}
 
-    @staticmethod
-    def epidate(year, week):
+    @staticmethod   
+    def epidate(year, week, first=True):
         """
         Get the date corresponding to the first day of the epidemiological week.
         :param year: int
         :param week: int
+        :param first: bool, if True returns the first day of the week, else returns the last day
         :return: datetime.date
         """
         firstday = EpiWeek.firstday_epiyear(year)
-        return firstday + timedelta(days=(week - 1) * 7)
+        if first:
+            return firstday + timedelta(days=(week - 1) * 7)
+        return firstday + timedelta(days=week * 7 - 1)
